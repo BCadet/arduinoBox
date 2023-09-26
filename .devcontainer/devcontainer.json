@@ -14,7 +14,9 @@
 		}
 	},
 
-	"runArgs": ["--privileged"],
+	"privileged": true,
+
+	"runArgs": ["--group-add", "dialout"],
 
 	"mounts": [
 		"source=/dev,target=/dev,type=bind"

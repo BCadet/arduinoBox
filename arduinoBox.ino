@@ -7,6 +7,11 @@ void onSelectPress(void* arg)
     lcd.print("SELECT");
 }
 
+void onUpPress(void* arg)
+{
+    lcd.print("UP");
+}
+
 void onSelectRelease(void *arg)
 {
     lcd.clear();
@@ -23,43 +28,10 @@ void setup()
     lcd.print("ARDUINO BOX");
 
     lcd.setButtonCallbacks(LCDKeypad::BUTTON_SELECT, onSelectPress, NULL, onSelectRelease, NULL);
+    lcd.setButtonCallbacks(LCDKeypad::BUTTON_UP, onUpPress, NULL, NULL, NULL);
 }
 
 void loop()
 {
-    // static uint16_t code = 0x0000;
-    // put your main code here, to run repeatedly:
-    // static enum LCDKeypad::buttonValue oldValue = LCDKeypad::RELEASED;
-    // enum LCDKeypad::buttonValue value = lcd.readButton();
-    // if (value != LCDKeypad::RELEASED)
-    // {
-    //     switch (value)
-    //     {
-    //     case LCDKeypad::RELEASED:
-    //         Serial.println("RELEASED");
-    //         break;
-    //     case LCDKeypad::SELECT:
-    //         Serial.println("SELECT");
-    //         lcd.setCursor(0,0);
-    //         for(uint8_t i=15;i>0;--i) lcd.print(code&(1<<i)?1:0);
-    //         break;
-    //     case LCDKeypad::LEFT:
-    //         Serial.println("LEFT");
-    //         break;
-    //     case LCDKeypad::RIGHT:
-    //         Serial.println("RIGHT");
-    //         break;
-    //     case LCDKeypad::UP:
-    //         Serial.println("UP");
-    //         code++;
-    //         break;
-    //     case LCDKeypad::DOWN:
-    //         Serial.println("DOWN");
-    //         if(code > 0) code--;
-    //         break;
-    //     }
-    //     oldValue = value;
-    //     lcd.setCursor(0,1);
-    //     lcd.print(code);
-    // }
+
 }

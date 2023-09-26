@@ -63,28 +63,32 @@ void buttonUpdater(LCDKeypad *lcd)
 {
     const enum LCDKeypad::buttons pressedButtonCache = lcd->pressedButton;
     const uint16_t buttonValue = analogRead(lcd->buttonInPin);
-    if (buttonValue > 1000)
+    if (lcd->pressedButton != LCDKeypad::BUTTON_NONE)
     {
-        if (lcd->pressedButton != LCDKeypad::BUTTON_NONE)
+        if(buttonValue > 1000)
+        {
             if (lcd->buttons[lcd->pressedButton].onRelease)
                 lcd->buttons[lcd->pressedButton].onRelease(lcd->buttons[lcd->pressedButton].onReleaseArg);
-        lcd->pressedButton = LCDKeypad::BUTTON_NONE;
-        return;
+            lcd->pressedButton = LCDKeypad::BUTTON_NONE;
+        }
     }
-    else if (buttonValue > 700)
-        lcd->pressedButton = LCDKeypad::BUTTON_SELECT;
-    else if (buttonValue > 400)
-        lcd->pressedButton = LCDKeypad::BUTTON_LEFT;
-    else if (buttonValue > 300)
-        lcd->pressedButton = LCDKeypad::BUTTON_DOWN;
-    else if (buttonValue > 100)
-        lcd->pressedButton = LCDKeypad::BUTTON_UP;
     else
-        lcd->pressedButton = LCDKeypad::BUTTON_RIGHT;
+    {
+        if(buttonValue > 1000) return;
+        else if (buttonValue > 700)
+            lcd->pressedButton = LCDKeypad::BUTTON_SELECT;
+        else if (buttonValue > 400)
+            lcd->pressedButton = LCDKeypad::BUTTON_LEFT;
+        else if (buttonValue > 300)
+            lcd->pressedButton = LCDKeypad::BUTTON_DOWN;
+        else if (buttonValue > 100)
+            lcd->pressedButton = LCDKeypad::BUTTON_UP;
+        else
+            lcd->pressedButton = LCDKeypad::BUTTON_RIGHT;
 
-    if (pressedButtonCache == LCDKeypad::BUTTON_NONE)
-        if (lcd->buttons[lcd->pressedButton].onPress)
+        if (lcd->pressedButton != LCDKeypad::BUTTON_NONE && lcd->buttons[lcd->pressedButton].onPress)
             lcd->buttons[lcd->pressedButton].onPress(lcd->buttons[lcd->pressedButton].onPressArg);
+    }
 }
 
 #endif

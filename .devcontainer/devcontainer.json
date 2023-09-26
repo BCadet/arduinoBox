@@ -19,7 +19,8 @@
 	"runArgs": ["--group-add", "dialout"],
 
 	"mounts": [
-		"source=/dev,target=/dev,type=bind"
+		"source=/dev,target=/dev,type=bind",
+		"source=/home/cadet/.ssh,target=/home/vscode/.ssh,type=bind"
 	  ]
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

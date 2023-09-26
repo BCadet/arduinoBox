@@ -1,18 +1,21 @@
+#define LCDKEYPAD_TIMER 1
 #include "LCDKeypad.hpp"
 
 LCDKeypad lcd(8, 9, 4, 5, 6, 7, 0);
 
 void onSelectPress(void* arg)
 {
+    lcd.clear();
     lcd.print("SELECT");
 }
 
 void onUpPress(void* arg)
 {
+    lcd.clear();
     lcd.print("UP");
 }
 
-void onSelectRelease(void *arg)
+void onRelease(void *arg)
 {
     lcd.clear();
 }
@@ -23,12 +26,13 @@ void setup()
     Serial.begin(115200);
     lcd.begin(16, 2);
     lcd.clear();
-    pinMode(LED_BUILTIN, OUTPUT);
-    Serial.println("INIT");
+    Serial.println("ARDUINO BOX");
     lcd.print("ARDUINO BOX");
 
-    lcd.setButtonCallbacks(LCDKeypad::BUTTON_SELECT, onSelectPress, NULL, onSelectRelease, NULL);
-    lcd.setButtonCallbacks(LCDKeypad::BUTTON_UP, onUpPress, NULL, NULL, NULL);
+    lcd.setButtonCallbacks(LCDKeypad::BUTTON_SELECT, onSelectPress, NULL, onRelease, NULL);
+    lcd.setButtonCallbacks(LCDKeypad::BUTTON_UP, onUpPress, NULL, onRelease, NULL);
+
+    lcd.startButtonListener();
 }
 
 void loop()

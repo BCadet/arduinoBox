@@ -3,9 +3,29 @@
 
 #include <LiquidCrystal.h>
 
-#define USE_TIMER_1     true
-#include <TimerInterrupt.h>
+#ifndef LCDKEYPAD_TIMER
+#define LCDKEYPAD_TIMER 1
+#endif
 
+#if LCDKEYPAD_TIMER == 1
+#define USE_TIMER_1     true
+#define DEFAULT_TIMER ITimer1
+#elif LCDKEYPAD_TIMER == 2
+#define USE_TIMER_2     true
+#define DEFAULT_TIMER ITimer2
+#elif LCDKEYPAD_TIMER == 3
+#define USE_TIMER_3     true
+#define DEFAULT_TIMER ITimer3
+#elif LCDKEYPAD_TIMER == 4
+#define USE_TIMER_4     true
+#define DEFAULT_TIMER ITimer4
+#elif LCDKEYPAD_TIMER == 5
+#define USE_TIMER_5     true
+#define DEFAULT_TIMER ITimer5
+#else 
+#error "invalid LCDKEYPAD_TIMER value. must be [1,2,3,4,5]"
+#endif
+#include <TimerInterrupt.h>
 
 class LCDKeypad;
 void buttonUpdater(LCDKeypad *lcd);
@@ -25,6 +45,7 @@ public:
 
 private:
     uint8_t buttonInPin;
+    TimerInterrupt *timer;
 
     struct button
     {
@@ -41,11 +62,12 @@ private:
 
 public:
     LCDKeypad(uint8_t rs, uint8_t enable,
-              uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t analogIn)
-        : LiquidCrystal(rs, enable, d0, d1, d2, d3), buttonInPin(analogIn), pressedButton(BUTTON_NONE)
+              uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t analogIn = 0, TimerInterrupt *timer = & DEFAULT_TIMER)
+        : LiquidCrystal(rs, enable, d0, d1, d2, d3), buttonInPin(analogIn), pressedButton(BUTTON_NONE), timer(timer)
     {
-        ITimer1.init();
-        ITimer1.attachInterruptInterval(1, buttonUpdater, this);
+        timer->init();
+        timer->attachInterruptInterval(1, buttonUpdater, this);
+        timer->disableTimer();
     }
 
     void setButtonCallbacks(enum buttons button, void (*onPressCb)(void *), void *onPressArg, void (*onReleaseCb)(void *), void *onReleaseArg)
@@ -56,7 +78,8 @@ public:
         buttons[button].onReleaseArg = onReleaseArg;
     }
 
-    void startButtonListener() {}
+    void startButtonListener() { timer->enableTimer(); }
+    void stopButtonListener() { timer->disableTimer(); }
 };
 
 void buttonUpdater(LCDKeypad *lcd)

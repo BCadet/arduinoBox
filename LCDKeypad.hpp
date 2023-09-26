@@ -3,29 +3,33 @@
 
 #include <LiquidCrystal.h>
 
+#ifndef LCDKEYPAD_DISABLE_TIMER
+
 #ifndef LCDKEYPAD_TIMER
 #define LCDKEYPAD_TIMER 1
 #endif
 
 #if LCDKEYPAD_TIMER == 1
-#define USE_TIMER_1     true
+#define USE_TIMER_1 true
 #define DEFAULT_TIMER ITimer1
 #elif LCDKEYPAD_TIMER == 2
-#define USE_TIMER_2     true
+#define USE_TIMER_2 true
 #define DEFAULT_TIMER ITimer2
 #elif LCDKEYPAD_TIMER == 3
-#define USE_TIMER_3     true
+#define USE_TIMER_3 true
 #define DEFAULT_TIMER ITimer3
 #elif LCDKEYPAD_TIMER == 4
-#define USE_TIMER_4     true
+#define USE_TIMER_4 true
 #define DEFAULT_TIMER ITimer4
 #elif LCDKEYPAD_TIMER == 5
-#define USE_TIMER_5     true
+#define USE_TIMER_5 true
 #define DEFAULT_TIMER ITimer5
-#else 
+#else
 #error "invalid LCDKEYPAD_TIMER value. must be [1,2,3,4,5]"
 #endif
 #include <TimerInterrupt.h>
+
+#endif
 
 class LCDKeypad;
 void buttonUpdater(LCDKeypad *lcd);
@@ -45,7 +49,9 @@ public:
 
 private:
     uint8_t buttonInPin;
+#ifndef LCDKEYPAD_DISABLE_TIMER
     TimerInterrupt *timer;
+#endif
 
     struct button
     {
@@ -61,14 +67,27 @@ private:
     friend void buttonUpdater(LCDKeypad *lcd);
 
 public:
+#ifndef LCDKEYPAD_DISABLE_TIMER
     LCDKeypad(uint8_t rs, uint8_t enable,
-              uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t analogIn = 0, TimerInterrupt *timer = & DEFAULT_TIMER)
-        : LiquidCrystal(rs, enable, d0, d1, d2, d3), buttonInPin(analogIn), pressedButton(BUTTON_NONE), timer(timer)
+              uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t analogIn = 0,
+              TimerInterrupt *timer = &DEFAULT_TIMER)
+#else
+    LCDKeypad(uint8_t rs, uint8_t enable,
+              uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3, uint8_t analogIn = 0)
+#endif
+        : LiquidCrystal(rs, enable, d0, d1, d2, d3), buttonInPin(analogIn), pressedButton(BUTTON_NONE)
+#ifndef LCDKEYPAD_DISABLE_TIMER
+          ,
+          timer(timer)
     {
         timer->init();
         timer->attachInterruptInterval(1, buttonUpdater, this);
         timer->disableTimer();
     }
+#else
+    {
+    }
+#endif
 
     void setButtonCallbacks(enum buttons button, void (*onPressCb)(void *), void *onPressArg, void (*onReleaseCb)(void *), void *onReleaseArg)
     {
@@ -77,9 +96,10 @@ public:
         buttons[button].onRelease = onReleaseCb;
         buttons[button].onReleaseArg = onReleaseArg;
     }
-
+#ifndef LCDKEYPAD_DISABLE_TIMER
     void startButtonListener() { timer->enableTimer(); }
     void stopButtonListener() { timer->disableTimer(); }
+#endif
 };
 
 void buttonUpdater(LCDKeypad *lcd)
@@ -88,7 +108,7 @@ void buttonUpdater(LCDKeypad *lcd)
     const uint16_t buttonValue = analogRead(lcd->buttonInPin);
     if (lcd->pressedButton != LCDKeypad::BUTTON_NONE)
     {
-        if(buttonValue > 1000)
+        if (buttonValue > 1000)
         {
             if (lcd->buttons[lcd->pressedButton].onRelease)
                 lcd->buttons[lcd->pressedButton].onRelease(lcd->buttons[lcd->pressedButton].onReleaseArg);
@@ -97,7 +117,8 @@ void buttonUpdater(LCDKeypad *lcd)
     }
     else
     {
-        if(buttonValue > 1000) return;
+        if (buttonValue > 1000)
+            return;
         else if (buttonValue > 700)
             lcd->pressedButton = LCDKeypad::BUTTON_SELECT;
         else if (buttonValue > 400)
